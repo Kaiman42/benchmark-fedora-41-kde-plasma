@@ -53,6 +53,27 @@
   ```
 - **Resultado**: Em avaliação
 
+## Problema 3: Uso da GPU Integrada Priorizado no Linux
+- **Sintomas**: Sistema usa GPU integrada por padrão, causando métricas erradas (>100% uso), ventoinha da dedicada não gira.
+- **Causa**: BIOS configurado corretamente, mas Linux detecta ambas GPUs.
+
+### Solução Definitiva
+- **Desabilitação da iGPU no BIOS**: Configurado para usar apenas GPU dedicada (RX 7600).
+- **Verificação**: Após reinício, apenas RX 7600 detectada (`lspci | grep VGA` mostra apenas 12:00.0).
+- **Monitoramento Corrigido**:
+  - Adicionado usuário aos grupos `video` e `render`: `sudo usermod -a -G video,render kaiman`
+  - Logout/login para aplicar.
+  - Instalado `nvtop` para monitoramento: `sudo dnf install nvtop`
+  - Comando: `nvtop` (mostra uso real <100%, clocks corretos).
+- **Ventoinha Funcionando**:
+  - Com iGPU desabilitada, ventoinha da RX 7600 gira automaticamente sob carga.
+  - Teste: `glmark2` gera carga, `cat /sys/.../fan1_input` > 0 (12 RPM observado).
+- **Configurações Globais**:
+  - `/etc/profile.d/dri_prime.sh`: `export DRI_PRIME=0`
+  - `/etc/environment`: `DRI_PRIME=0`
+  - GRUB: `amdgpu.ppfeaturemask=0x0` para desabilitar overdrive.
+- **Resultado**: Sistema usa apenas RX 7600, métricas corretas, ventoinha ativa. Solução definitiva e estável.
+
 ## Resultados dos Comandos de Diagnóstico
 
 ### 1. Verificação de Controle de Ventoinhas
@@ -95,12 +116,3 @@ Foram encontrados arquivos de controle PWM em:
 /sys/devices/pci0000:00/0000:00:01.1/0000:10:00.0/0000:11:00.0/0000:12:00.0/hwmon/hwmon0/pwm1_min
 /sys/devices/pci0000:00/0000:00:01.1/0000:10:00.0/0000:11:00.0/0000:12:00.0/hwmon/hwmon0/pwm1_max
 ```
-
-### 2. Atualizações Disponíveis
-- Várias atualizações do KDE Plasma 6.4.3 disponíveis
-- Nenhuma atualização do kernel ou drivers AMD disponível no momento
-
-## Próximos Passos
-1. Testar o controle manual das ventoinhas usando os arquivos encontrados
-2. Verificar as permissões dos arquivos de controle
-4. Monitorar as temperaturas após ajustes

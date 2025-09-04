@@ -46,6 +46,25 @@ export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/radeon_icd.x86_64.json
 sudo usermod -a -G video $USER
 ```
 
+### Helper no repositório
+Há um script helper que facilita aplicar essas variáveis e testar controles de ventoinha via sysfs:
+
+```bash
+# Aplicar as variáveis na sessão atual (source):
+source scripts/setup_gpu_env.sh
+
+# Mostrar hwmon e sensores amdgpu
+./scripts/setup_gpu_env.sh --show-hwmon
+
+# Tentar aplicar PWM manual (150) — precisa de sudo
+./scripts/setup_gpu_env.sh --apply-pwm 150
+
+# Reverter pwm para controle automático
+./scripts/setup_gpu_env.sh --revert-pwm
+```
+
+Consulte `scripts/setup_gpu_env.sh --help` para mais opções e avisos.
+
 ## Monitoramento
 ```bash
 # Verificar uso da GPU
